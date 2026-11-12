@@ -10,7 +10,7 @@ function TopBar({ onMenuClick }) {
     const pageTitle = current ? current.label : "Workbench";
 
     return (
-        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-zinc-800 px-4">
+        <header className="flex h-14 shrink-0 items-center gap-3 border-b border-border px-4">
         <Button
             variant="ghost"
             size="icon"
@@ -21,7 +21,7 @@ function TopBar({ onMenuClick }) {
             <Menu size={18} />
         </Button>
 
-        <h1 className="text-sm font-semibold text-zinc-100">{pageTitle}</h1>
+        <h1 className="text-sm font-semibold text-foreground">{pageTitle}</h1>
         </header>
     );
 }

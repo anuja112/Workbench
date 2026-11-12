@@ -7,28 +7,19 @@ function NavigationItem({ label, path, icon: Icon, onNavigate }) {
         onClick={onNavigate}
         className={({ isActive }) =>
             [
-            "group relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors duration-150",
+            "relative flex items-center gap-3 rounded-md px-3 py-2.5 text-sm transition-colors duration-150",
             isActive
-                ? "bg-indigo-500/10 text-indigo-400"
-                : "text-zinc-400 hover:bg-zinc-800/60 hover:text-zinc-200",
+                ? "bg-muted font-medium text-foreground"
+                : "text-muted-foreground hover:bg-muted/60 hover:text-foreground",
             ].join(" ")
         }
         >
         {({ isActive }) => (
             <>
             {isActive && (
-                <span className="absolute left-0 h-5 w-0.5 rounded-r-full bg-indigo-500" />
+                <span className="absolute inset-y-2 left-0 w-[3px] bg-brand" />
             )}
-
-            <Icon
-                className={[
-                "h-4 w-4 shrink-0 transition-colors",
-                isActive
-                    ? "text-indigo-400"
-                    : "text-zinc-500 group-hover:text-zinc-300",
-                ].join(" ")}
-            />
-
+            <Icon className="h-4 w-4 shrink-0" />
             <span>{label}</span>
             </>
         )}

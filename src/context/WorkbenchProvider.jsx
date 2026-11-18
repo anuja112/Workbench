@@ -1,5 +1,17 @@
+import { createContext, useContext } from "react";
 import { useLocalStorage } from "@/hooks/useLocalStorage";
-import { WorkbenchContext } from "./WorkbenchContext";
+
+const WorkbenchContext = createContext(null);
+
+function cleanTask(data) {
+    return {
+        title: data.title.trim(),
+        description: data.description.trim(),
+        priority: data.priority,
+        status: data.status,
+        dueDate: data.dueDate,
+    };
+}
 
 export function WorkbenchProvider({ children }) {
     const [tasks, setTasks] = useLocalStorage("workbench:tasks", [], Array.isArray);
@@ -7,28 +19,25 @@ export function WorkbenchProvider({ children }) {
     function addTask(data) {
         const task = {
         id: crypto.randomUUID(),
-        title: data.title.trim(),
-        description: data.description.trim(),
-        priority: data.priority,
-        status: data.status,
-        previousStatus: data.status,
         createdAt: new Date().toISOString(),
+        ...cleanTask(data),
         };
-
         setTasks((prev) => [task, ...prev]);
+    }
+
+    function updateTask(id, data) {
+        setTasks((prev) =>
+        prev.map((task) => (task.id === id ? { ...task, ...cleanTask(data) } : task)),
+        );
     }
 
     function toggleTask(id) {
         setTasks((prev) =>
-        prev.map((task) => {
-            if (task.id !== id) return task;
-
-            if (task.status === "completed") {
-            return { ...task, status: task.previousStatus ?? "pending" };
-            }
-
-            return { ...task, previousStatus: task.status, status: "completed" };
-        }),
+        prev.map((task) =>
+            task.id === id
+            ? { ...task, status: task.status === "completed" ? "pending" : "completed" }
+            : task,
+        ),
         );
     }
 
@@ -36,11 +45,19 @@ export function WorkbenchProvider({ children }) {
         setTasks((prev) => prev.filter((task) => task.id !== id));
     }
 
-    const value = { tasks, addTask, toggleTask, deleteTask };
+    const value = { tasks, addTask, updateTask, toggleTask, deleteTask };
 
     return (
         <WorkbenchContext.Provider value={value}>
         {children}
         </WorkbenchContext.Provider>
     );
+    }
+
+    export function useWorkbench() {
+    const context = useContext(WorkbenchContext);
+    if (!context) {
+        throw new Error("useWorkbench must be used inside <WorkbenchProvider>");
+    }
+    return context;
 }

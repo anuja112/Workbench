@@ -1,44 +1,34 @@
 import { useState } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-    Select,
-    SelectContent,
-    SelectItem,
-    SelectTrigger,
-    SelectValue,
-} from "@/components/ui/select";
+import OptionSelect from "@/components/common/OptionSelect";
 import { PRIORITIES, STATUSES } from "@/lib/tasks";
 
-const emptyForm = {
-    title: "",
-    description: "",
-    priority: "medium",
-    status: "pending",
-};
+// task = null  -> create a new task
+// task = {...} -> edit that task
+function TaskFormModal({ task = null, onSubmit, onClose }) {
+    const isEditing = task !== null;
 
-const openStatuses = STATUSES.filter((item) => item.value !== "completed");
-
-function TaskFormModal({ open, onOpenChange, onSubmit }) {
-    const [form, setForm] = useState(emptyForm);
+    const [form, setForm] = useState({
+        title: task?.title ?? "",
+        description: task?.description ?? "",
+        priority: task?.priority ?? "medium",
+        status: task?.status ?? "pending",
+        dueDate: task?.dueDate ?? "",
+    });
 
     function updateField(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
-    }
-
-    function handleOpenChange(nextOpen) {
-        if (!nextOpen) setForm(emptyForm);
-        onOpenChange(nextOpen);
     }
 
     function handleSubmit(event) {
@@ -46,17 +36,19 @@ function TaskFormModal({ open, onOpenChange, onSubmit }) {
         if (!form.title.trim()) return;
 
         onSubmit(form);
-        handleOpenChange(false);
+        onClose();
     }
 
     return (
-        <Dialog open={open} onOpenChange={handleOpenChange}>
+        <Dialog open onOpenChange={(open) => !open && onClose()}>
         <DialogContent className="sm:max-w-lg">
             <form onSubmit={handleSubmit} className="space-y-5">
             <DialogHeader>
-                <DialogTitle>Create task</DialogTitle>
+                <DialogTitle>{isEditing ? "Edit task" : "Create task"}</DialogTitle>
                 <DialogDescription>
-                Add a new task to your workspace.
+                {isEditing
+                    ? "Update the details of this task."
+                    : "Add a new task to your workspace."}
                 </DialogDescription>
             </DialogHeader>
 
@@ -77,9 +69,7 @@ function TaskFormModal({ open, onOpenChange, onSubmit }) {
                 id="task-description"
                 rows={3}
                 value={form.description}
-                onChange={(event) =>
-                    updateField("description", event.target.value)
-                }
+                onChange={(event) => updateField("description", event.target.value)}
                 placeholder="Optional details"
                 />
             </div>
@@ -87,57 +77,41 @@ function TaskFormModal({ open, onOpenChange, onSubmit }) {
             <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                 <Label>Priority</Label>
-                <Select
+                <OptionSelect
                     value={form.priority}
-                    onValueChange={(value) => updateField("priority", value)}
-                >
-                    <SelectTrigger className="w-full">
-                    <SelectValue>
-                        {PRIORITIES.find((item) => item.value === form.priority)?.label}
-                    </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                    {PRIORITIES.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                        </SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
+                    onChange={(value) => updateField("priority", value)}
+                    options={PRIORITIES}
+                    className="w-full"
+                />
                 </div>
 
                 <div className="space-y-2">
                 <Label>Status</Label>
-                <Select
+                <OptionSelect
                     value={form.status}
-                    onValueChange={(value) => updateField("status", value)}
-                >
-                    <SelectTrigger className="w-full">
-                    <SelectValue>
-                        {openStatuses.find((item) => item.value === form.status)?.label}
-                    </SelectValue>
-                    </SelectTrigger>
-                    <SelectContent>
-                    {openStatuses.map((item) => (
-                        <SelectItem key={item.value} value={item.value}>
-                        {item.label}
-                        </SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
+                    onChange={(value) => updateField("status", value)}
+                    options={STATUSES}
+                    className="w-full"
+                />
                 </div>
             </div>
 
+            <div className="space-y-2">
+                <Label htmlFor="task-due-date">Due date</Label>
+                <Input
+                id="task-due-date"
+                type="date"
+                value={form.dueDate}
+                onChange={(event) => updateField("dueDate", event.target.value)}
+                />
+            </div>
+
             <DialogFooter>
-                <Button
-                type="button"
-                variant="outline"
-                onClick={() => handleOpenChange(false)}
-                >
+                <Button type="button" variant="outline" onClick={onClose}>
                 Cancel
                 </Button>
                 <Button type="submit" disabled={!form.title.trim()}>
-                Create task
+                {isEditing ? "Save changes" : "Create task"}
                 </Button>
             </DialogFooter>
             </form>

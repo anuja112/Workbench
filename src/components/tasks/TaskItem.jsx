@@ -1,15 +1,20 @@
-import { Check, Trash2 } from "lucide-react";
+import { Check, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Tag from "@/components/common/Tag";
-import { PRIORITIES, STATUSES } from "@/lib/tasks";
+import { PRIORITIES, STATUSES, formatDate, isOverdue } from "@/lib/tasks";
 
-function TaskItem({ task, onToggle, onDelete }) {
+function TaskItem({ task, onToggle, onEdit, onDelete }) {
     const isDone = task.status === "completed";
+    const overdue = isOverdue(task);
     const priority = PRIORITIES.find((item) => item.value === task.priority);
     const status = STATUSES.find((item) => item.value === task.status);
 
     return (
-        <li className="flex items-start gap-3 rounded-lg border border-border bg-card p-3">
+        <li
+        className={`flex items-start gap-3 rounded-lg border bg-card p-3 ${
+            overdue ? "border-danger/40" : "border-border"
+        }`}
+        >
         <button
             type="button"
             onClick={() => onToggle(task.id)}
@@ -41,17 +46,22 @@ function TaskItem({ task, onToggle, onDelete }) {
             <div className="mt-2 flex flex-wrap gap-2">
             {status && <Tag tone={status.tone}>{status.label}</Tag>}
             {priority && <Tag tone={priority.tone}>{priority.label}</Tag>}
+            {task.dueDate && (
+                <Tag tone={overdue ? "danger" : "neutral"}>
+                {overdue ? "Overdue" : "Due"} · {formatDate(task.dueDate)}
+                </Tag>
+            )}
             </div>
         </div>
 
-        <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => onDelete(task.id)}
-            aria-label="Delete task"
-        >
+        <div className="flex shrink-0 gap-1">
+            <Button variant="ghost" size="icon" onClick={() => onEdit(task)} aria-label="Edit task">
+            <Pencil />
+            </Button>
+            <Button variant="ghost" size="icon" onClick={() => onDelete(task)} aria-label="Delete task">
             <Trash2 />
-        </Button>
+            </Button>
+        </div>
         </li>
     );
 }

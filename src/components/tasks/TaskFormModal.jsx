@@ -13,10 +13,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import OptionSelect from "@/components/common/OptionSelect";
 import { PRIORITIES, STATUSES } from "@/lib/tasks";
+import { useWorkbench } from "@/context/WorkbenchProvider";
 
-// task = null  -> create a new task
-// task = {...} -> edit that task
 function TaskFormModal({ task = null, onSubmit, onClose }) {
+    const { projects } = useWorkbench();
     const isEditing = task !== null;
 
     const [form, setForm] = useState({
@@ -25,7 +25,13 @@ function TaskFormModal({ task = null, onSubmit, onClose }) {
         priority: task?.priority ?? "medium",
         status: task?.status ?? "pending",
         dueDate: task?.dueDate ?? "",
+        projectId: task?.projectId ?? "none",
     });
+
+    const projectOptions = [
+        { value: "none", label: "No project" },
+        ...projects.map((project) => ({ value: project.id, label: project.name })),
+    ];
 
     function updateField(field, value) {
         setForm((prev) => ({ ...prev, [field]: value }));
@@ -96,14 +102,26 @@ function TaskFormModal({ task = null, onSubmit, onClose }) {
                 </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                <Label>Project</Label>
+                <OptionSelect
+                    value={form.projectId}
+                    onChange={(value) => updateField("projectId", value)}
+                    options={projectOptions}
+                    className="w-full"
+                />
+                </div>
+
+                <div className="space-y-2">
                 <Label htmlFor="task-due-date">Due date</Label>
                 <Input
-                id="task-due-date"
-                type="date"
-                value={form.dueDate}
-                onChange={(event) => updateField("dueDate", event.target.value)}
+                    id="task-due-date"
+                    type="date"
+                    value={form.dueDate}
+                    onChange={(event) => updateField("dueDate", event.target.value)}
                 />
+                </div>
             </div>
 
             <DialogFooter>

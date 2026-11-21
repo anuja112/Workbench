@@ -13,7 +13,7 @@ const statusOptions = [{ value: "all", label: "All statuses" }, ...STATUSES];
 const priorityOptions = [{ value: "all", label: "All priorities" }, ...PRIORITIES];
 
 function Tasks() {
-    const { tasks, addTask, updateTask, toggleTask, deleteTask } = useWorkbench();
+    const { tasks, projects, addTask, updateTask, toggleTask, deleteTask } = useWorkbench();
 
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [editingTask, setEditingTask] = useState(null);
@@ -21,8 +21,13 @@ function Tasks() {
     const [search, setSearch] = useState("");
     const [statusFilter, setStatusFilter] = useState("all");
     const [priorityFilter, setPriorityFilter] = useState("all");
+    const [projectFilter, setProjectFilter] = useState("all");
 
-    
+    const projectOptions = [
+        { value: "all", label: "All projects" },
+        ...projects.map((project) => ({ value: project.id, label: project.name })),
+    ];
+
     const query = search.trim().toLowerCase();
 
     const visibleTasks = tasks.filter((task) => {
@@ -31,8 +36,9 @@ function Tasks() {
         (task.description ?? "").toLowerCase().includes(query);
         const matchesStatus = statusFilter === "all" || task.status === statusFilter;
         const matchesPriority = priorityFilter === "all" || task.priority === priorityFilter;
+        const matchesProject = projectFilter === "all" || task.projectId === projectFilter;
 
-        return matchesSearch && matchesStatus && matchesPriority;
+        return matchesSearch && matchesStatus && matchesPriority && matchesProject;
     });
 
     function openCreate() {
@@ -63,6 +69,7 @@ function Tasks() {
         setSearch("");
         setStatusFilter("all");
         setPriorityFilter("all");
+        setProjectFilter("all");
     }
 
     return (
@@ -102,6 +109,12 @@ function Tasks() {
                 options={priorityOptions}
                 className="w-40"
                 />
+                <OptionSelect
+                value={projectFilter}
+                onChange={setProjectFilter}
+                options={projectOptions}
+                className="w-40"
+                />
             </div>
 
             <p className="text-xs text-muted-foreground">
@@ -133,6 +146,7 @@ function Tasks() {
                 <TaskItem
                 key={task.id}
                 task={task}
+                project={projects.find((project) => project.id === task.projectId)}
                 onToggle={toggleTask}
                 onEdit={openEdit}
                 onDelete={handleDelete}

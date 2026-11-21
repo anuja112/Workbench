@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import Tag from "@/components/common/Tag";
 import { PRIORITIES, STATUSES, formatDate, isOverdue } from "@/lib/tasks";
 
-function TaskItem({ task, onToggle, onEdit, onDelete }) {
+function TaskItem({ task, project, onToggle, onEdit, onDelete }) {
     const isDone = task.status === "completed";
     const overdue = isOverdue(task);
     const priority = PRIORITIES.find((item) => item.value === task.priority);
@@ -46,6 +46,7 @@ function TaskItem({ task, onToggle, onEdit, onDelete }) {
             <div className="mt-2 flex flex-wrap gap-2">
             {status && <Tag tone={status.tone}>{status.label}</Tag>}
             {priority && <Tag tone={priority.tone}>{priority.label}</Tag>}
+            {project && <Tag tone="neutral">{project.name}</Tag>}
             {task.dueDate && (
                 <Tag tone={overdue ? "danger" : "neutral"}>
                 {overdue ? "Overdue" : "Due"} · {formatDate(task.dueDate)}
